@@ -24,17 +24,21 @@ import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
 import rs.sloman.iksoks.ui.theme.IksOksTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         setContent {
             IksOksTheme {
                 // A surface container using the 'background' color from the theme
                 Surface {
-                    Text(text = "Text")
+                    LazyVerticalGridDemo(viewModel = viewModel){
+                        viewModel.play(it)
+                    }
                 }
             }
         }
@@ -44,7 +48,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyVerticalGridDemo(viewModel: MainViewModel) {
+fun LazyVerticalGridDemo(viewModel: MainViewModel, onClick: (Int) -> Unit) {
 
     val myList = viewModel.list.observeAsState()
 
@@ -62,10 +66,10 @@ fun LazyVerticalGridDemo(viewModel: MainViewModel) {
 
                 items(list.size) {index ->
                     MyButton(
-                        position = list[index],
-                        list = myList.value!!
+                        position = index,
+                        list = list
                     ) {
-                        viewModel.play(index)
+                        onClick(index)
                     }
                 }
 
