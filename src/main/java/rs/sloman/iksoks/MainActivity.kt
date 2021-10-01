@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.GridCells
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
             IksOksTheme {
                 // A surface container using the 'background' color from the theme
                 Surface {
-                    LazyVerticalGridDemo(viewModel = viewModel){
+                    LazyVerticalGridDemo(viewModel = viewModel) {
                         viewModel.play(it)
                     }
                 }
@@ -64,7 +65,7 @@ fun LazyVerticalGridDemo(viewModel: MainViewModel, onClick: (Int) -> Unit) {
 
             myList.value?.let { list ->
 
-                items(list.size) {index ->
+                items(list.size) { index ->
                     MyButton(
                         position = index,
                         list = list
@@ -87,10 +88,11 @@ fun MyButton(
     Button(
         modifier = Modifier
             .padding(4.dp)
-            .fillMaxWidth(),
+            .aspectRatio(1f),
         onClick = {
             onClick(position)
         },
+        enabled = list[position] == 0
     ) {
         MyText(int = list[position])
     }
@@ -101,10 +103,14 @@ fun MyText(
     int: Int
 ) {
     Text(
-        text = int.toString(),
+        text = when (int) {
+            1 -> "X"
+            2 -> "O"
+            else -> ""
+        },
         fontWeight = FontWeight.Bold,
         fontSize = 30.sp,
-        color = MaterialTheme.colors.onPrimary,
+        color = MaterialTheme.colors.secondary,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(16.dp)
     )
