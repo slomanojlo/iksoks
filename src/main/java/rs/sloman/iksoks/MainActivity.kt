@@ -5,9 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
@@ -17,6 +18,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,8 +39,26 @@ class MainActivity : ComponentActivity() {
             IksOksTheme {
                 // A surface container using the 'background' color from the theme
                 Surface {
-                    LazyVerticalGridDemo(viewModel = viewModel) {
-                        viewModel.play(it)
+
+                    val gameOver = viewModel.gameOver.observeAsState()
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        LazyVerticalGridDemo(
+                            viewModel = viewModel,
+                            gameOver = gameOver.value == true
+                        ) {
+                            viewModel.play(it)
+                        }
+                        Text(
+                            text = if (gameOver.value == true) "WON" else "",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                        Button(
+                            onClick = { viewModel.setupBoard() },
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(text = "Reset")
+                        }
                     }
                 }
             }
@@ -49,7 +69,11 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyVerticalGridDemo(viewModel: MainViewModel, onClick: (Int) -> Unit) {
+fun LazyVerticalGridDemo(
+    viewModel: MainViewModel,
+    gameOver: Boolean,
+    onClick: (Int) -> Unit
+) {
 
     val myList = viewModel.list.observeAsState()
 
@@ -61,6 +85,7 @@ fun LazyVerticalGridDemo(viewModel: MainViewModel, onClick: (Int) -> Unit) {
             end = 12.dp,
             bottom = 16.dp,
         ),
+        modifier = Modifier.clickable(enabled = false, onClick = {}),
         content = {
 
             myList.value?.let { list ->
@@ -68,7 +93,8 @@ fun LazyVerticalGridDemo(viewModel: MainViewModel, onClick: (Int) -> Unit) {
                 items(list.size) { index ->
                     MyButton(
                         position = index,
-                        list = list
+                        list = list,
+                        gameOver = gameOver,
                     ) {
                         onClick(index)
                     }
@@ -82,17 +108,19 @@ fun LazyVerticalGridDemo(viewModel: MainViewModel, onClick: (Int) -> Unit) {
 @Composable
 fun MyButton(
     position: Int,
-    list: MutableList<Int>,
+    list: List<Int>,
+    gameOver: Boolean,
     onClick: (Int) -> Unit
 ) {
     Button(
         modifier = Modifier
             .padding(4.dp)
             .aspectRatio(1f),
+
         onClick = {
             onClick(position)
         },
-        enabled = list[position] == 0
+        enabled = list[position] == 0 && !gameOver
     ) {
         MyText(int = list[position])
     }
