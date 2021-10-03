@@ -38,26 +38,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             IksOksTheme {
-                // A surface container using the 'background' color from the theme
                 Surface {
 
-                    val gameWon = viewModel.gameWon.observeAsState()
-                    val message = viewModel.message.observeAsState()
+                    val iksOks = viewModel.iksOks.observeAsState()
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                         LazyVerticalGridDemo(
-                            list = viewModel.list,
-                            gameWon = gameWon.value == true
+                            list = iksOks.value?.matrix?.flatten()?.toMutableList() ?: arrayListOf(),
+                            gameWon = iksOks.value?.gameWon == true
                         ) {
                             viewModel.play(it)
-                        }
-
-                        message.value?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier.padding(16.dp)
-                            )
                         }
 
                         Button(
@@ -67,6 +58,12 @@ class MainActivity : ComponentActivity() {
                             Text(text = "Reset")
                         }
 
+                        iksOks.value?.let {
+                            Text(
+                                text = if (it.gameWon) "WON" else "PLAYING",
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -78,12 +75,10 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LazyVerticalGridDemo(
-    list: LiveData<MutableList<Int>>,
+    list: MutableList<Int>,
     gameWon: Boolean,
-    onClick: (Int) -> Unit
+    onClick: (Int) -> Unit,
 ) {
-
-    val myList = list.observeAsState()
 
     LazyVerticalGrid(
         cells = GridCells.Fixed(BOARD_SIZE),
@@ -94,18 +89,16 @@ fun LazyVerticalGridDemo(
             bottom = 16.dp,
         ),
     ) {
-        myList.value?.let { list ->
 
-            items(list.size) { index ->
-                MyButton(
-                    position = index,
-                    list = list,
-                    gameOver = gameWon,
-                ) {
-                    onClick(index)
-                }
-
+        items(list.size) { index ->
+            MyButton(
+                position = index,
+                list = list,
+                gameOver = gameWon,
+            ) {
+                onClick(index)
             }
+
         }
     }
 }
@@ -115,7 +108,7 @@ fun MyButton(
     position: Int,
     list: List<Int>,
     gameOver: Boolean,
-    onClick: (Int) -> Unit
+    onClick: (Int) -> Unit,
 ) {
     Button(
         modifier = Modifier
@@ -133,7 +126,7 @@ fun MyButton(
 
 @Composable
 fun MyText(
-    square: Int
+    square: Int,
 ) {
     Text(
         text = when (square) {

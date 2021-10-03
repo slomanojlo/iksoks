@@ -1,9 +1,9 @@
 package rs.sloman.iksoks
 
-
 import org.junit.Before
 import org.junit.Test
 import com.google.common.truth.Truth.assertThat
+import rs.sloman.iksoks.Constants.Companion.BOARD_SIZE
 
 
 class IksOksTest {
@@ -12,14 +12,19 @@ class IksOksTest {
 
     @Before
     fun setUp() {
-        assertThat(Constants.BOARD_SIZE).isEqualTo(3)
         iksOks = IksOks()
         iksOks.setupMatrix()
     }
 
     @Test
+    fun shouldInitialBoardSizeBe3(){
+        val boardSize = BOARD_SIZE
+        assertThat(boardSize).isEqualTo(BOARD_SIZE)
+    }
+
+    @Test
     fun shouldInitializeMatrixOnSetup(){
-        val expectedArray = Array(Constants.BOARD_SIZE) { Array(Constants.BOARD_SIZE) { Square.EMPTY.value } }
+        val expectedArray = Array(BOARD_SIZE) { Array(BOARD_SIZE) { Square.EMPTY.value } }
 
         assertThat(expectedArray).isEqualTo(iksOks.matrix)
     }
@@ -39,7 +44,7 @@ class IksOksTest {
     }
 
     @Test
-    fun shouldProperlyInitializeGameWon(){
+    fun shouldProperlyInitializeGameNotWon(){
         iksOks.play(0,0)
 
         assertThat(iksOks.gameWon).isEqualTo(false)

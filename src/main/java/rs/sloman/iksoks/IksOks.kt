@@ -8,7 +8,7 @@ class IksOks {
     var gameWon: Boolean = false
         private set
     var matrix: Array<Array<Int>> = emptyArray()
-
+        private set
 
     fun setupMatrix() {
         matrix = Array(Constants.BOARD_SIZE) { Array(Constants.BOARD_SIZE) { Square.EMPTY.value } }
@@ -37,7 +37,6 @@ class IksOks {
     }
 
     private fun xOrY(xPlaying: Boolean): Int = if (xPlaying) Square.X.value else Square.O.value
-
 
     private fun isWinningMove(matrix: Matrix, x: Int, y: Int, move: Int): Boolean {
 
