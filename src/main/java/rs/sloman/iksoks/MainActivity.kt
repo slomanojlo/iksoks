@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import dagger.hilt.android.AndroidEntryPoint
 import rs.sloman.iksoks.ui.theme.IksOksTheme
 
@@ -41,24 +42,30 @@ class MainActivity : ComponentActivity() {
                 Surface {
 
                     val gameOver = viewModel.gameOver.observeAsState()
+                    val xPlaying = viewModel.xPlaying.observeAsState()
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
                         LazyVerticalGridDemo(
-                            viewModel = viewModel,
+                            list = viewModel.list,
                             gameOver = gameOver.value == true
                         ) {
                             viewModel.play(it)
                         }
+
                         Text(
-                            text = if (gameOver.value == true) "WON" else "",
+                            text = if (gameOver.value == true) "${if (xPlaying.value == true) 
+                                Square.X.name else Square.O.name} WON!" else "",
                             modifier = Modifier.padding(16.dp)
                         )
+
                         Button(
                             onClick = { viewModel.setupBoard() },
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(text = "Reset")
                         }
+
                     }
                 }
             }
@@ -70,12 +77,12 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LazyVerticalGridDemo(
-    viewModel: MainViewModel,
+    list: LiveData<MutableList<Int>>,
     gameOver: Boolean,
     onClick: (Int) -> Unit
 ) {
 
-    val myList = viewModel.list.observeAsState()
+    val myList = list.observeAsState()
 
     LazyVerticalGrid(
         cells = GridCells.Fixed(3),

@@ -9,53 +9,54 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor() : ViewModel() {
 
+    private val boardSize = 3
+
+    private val _xPlaying: MutableLiveData<Boolean> = MutableLiveData(true)
+    val xPlaying = _xPlaying.asLiveData()
+
+    private var matrix: MutableLiveData<Array<Array<Int>>> = MutableLiveData(emptyArray())
+
     private val _list: MutableLiveData<MutableList<Int>> = MutableLiveData(mutableListOf())
     val list = _list.asLiveData()
 
     private val _gameOver: MutableLiveData<Boolean> = MutableLiveData(false)
     val gameOver = _gameOver.asLiveData()
 
-
-    private val _board = MutableLiveData(mutableListOf<MutableList<Int>>())
-    val board = _board.asLiveData()
-    private val boardSize = 3
-
-    private var xPlaying = true
-
-    private var m: MutableLiveData<Array<Array<Int>>> =
-        MutableLiveData(Array(boardSize) { Array(boardSize) { 0 } })
-
     init {
         setupBoard()
     }
 
 
-    private var isOdd = true
+    fun play(position: Int) {
+        val x = position / boardSize
+        val y = position % boardSize
 
-    fun play(int: Int) {
-        val x = int / boardSize
-        val y = int % boardSize
+        matrix.value?.get(x)?.set(y, if (_xPlaying.value == true) Square.X.value else Square.O.value)
+        _list.value = matrix.value?.flatten()?.toMutableList()
+        _gameOver.value =
+            isWinningMove(x, y, if (_xPlaying.value == true) Square.X.value else Square.O.value)
 
-        m.value?.get(x)?.set(y, if(xPlaying) 1 else 2)
-        _list.value = m.value?.flatten()?.toMutableList()
-        _gameOver.value = isWinningMove(x, y ,if(xPlaying) 1 else 2)
-        xPlaying = !xPlaying
+        if (_gameOver.value == false) {
+            _xPlaying.value?.let { xPlaying ->
+                _xPlaying.value = !xPlaying
+            }
+        }
     }
 
-    fun setupBoard(){
+    fun setupBoard() {
         _gameOver.value = false
-        xPlaying = true
-        m.value = Array(boardSize) { Array(boardSize) { 0 } }
-        _list.value = mutableListOf<Int>().apply{
-            repeat(boardSize * boardSize){
-                this.add(0)
+        _xPlaying.value = true
+        matrix.value = Array(boardSize) { Array(boardSize) { Square.EMPTY.value } }
+        _list.value = mutableListOf<Int>().apply {
+            repeat(boardSize * boardSize) {
+                this.add(Square.EMPTY.value)
             }
         }
     }
 
     private fun isWinningMove(x: Int, y: Int, move: Int): Boolean {
 
-        val board = m.value
+        val board = matrix.value
 
         // check the row
         for (i in 0 until boardSize) {
