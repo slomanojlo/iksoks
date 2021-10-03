@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import dagger.hilt.android.AndroidEntryPoint
+import rs.sloman.iksoks.Constants.Companion.BOARD_SIZE
 import rs.sloman.iksoks.ui.theme.IksOksTheme
 
 @AndroidEntryPoint
@@ -41,23 +41,24 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface {
 
-                    val gameOver = viewModel.gameOver.observeAsState()
-                    val xPlaying = viewModel.xPlaying.observeAsState()
+                    val gameWon = viewModel.gameWon.observeAsState()
+                    val message = viewModel.message.observeAsState()
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                         LazyVerticalGridDemo(
                             list = viewModel.list,
-                            gameOver = gameOver.value == true
+                            gameWon = gameWon.value == true
                         ) {
                             viewModel.play(it)
                         }
 
-                        Text(
-                            text = if (gameOver.value == true) "${if (xPlaying.value == true) 
-                                Square.X.name else Square.O.name} WON!" else "",
-                            modifier = Modifier.padding(16.dp)
-                        )
+                        message.value?.let {
+                            Text(
+                                text = it,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
 
                         Button(
                             onClick = { viewModel.setupBoard() },
@@ -78,38 +79,35 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LazyVerticalGridDemo(
     list: LiveData<MutableList<Int>>,
-    gameOver: Boolean,
+    gameWon: Boolean,
     onClick: (Int) -> Unit
 ) {
 
     val myList = list.observeAsState()
 
     LazyVerticalGrid(
-        cells = GridCells.Fixed(3),
+        cells = GridCells.Fixed(BOARD_SIZE),
         contentPadding = PaddingValues(
             start = 12.dp,
             top = 16.dp,
             end = 12.dp,
             bottom = 16.dp,
         ),
-        modifier = Modifier.clickable(enabled = false, onClick = {}),
-        content = {
+    ) {
+        myList.value?.let { list ->
 
-            myList.value?.let { list ->
-
-                items(list.size) { index ->
-                    MyButton(
-                        position = index,
-                        list = list,
-                        gameOver = gameOver,
-                    ) {
-                        onClick(index)
-                    }
+            items(list.size) { index ->
+                MyButton(
+                    position = index,
+                    list = list,
+                    gameOver = gameWon,
+                ) {
+                    onClick(index)
                 }
 
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -127,26 +125,29 @@ fun MyButton(
         onClick = {
             onClick(position)
         },
-        enabled = list[position] == 0 && !gameOver
+        enabled = list[position] == 0 && !gameOver,
     ) {
-        MyText(int = list[position])
+        MyText(square = list[position])
     }
 }
 
 @Composable
 fun MyText(
-    int: Int
+    square: Int
 ) {
     Text(
-        text = when (int) {
-            1 -> "X"
-            2 -> "O"
+        text = when (square) {
+            1 -> Square.X.name
+            2 -> Square.O.name
             else -> ""
         },
         fontWeight = FontWeight.Bold,
         fontSize = 30.sp,
-        color = MaterialTheme.colors.secondary,
+        color = when (square) {
+            1 -> MaterialTheme.colors.secondary
+            2 -> MaterialTheme.colors.primary
+            else -> MaterialTheme.colors.background
+        },
         textAlign = TextAlign.Center,
-        modifier = Modifier.padding(16.dp)
     )
 }
