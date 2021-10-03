@@ -1,12 +1,14 @@
 package rs.sloman.iksoks
 
-typealias Matrix = Array<Array<Int>>
-
 class IksOks {
-    private var xPlaying: Boolean = true
-    private var draw: Boolean = false
-    private var gameWon: Boolean = false
-    private var matrix: Array<Array<Int>> = emptyArray()
+    var xPlaying: Boolean = true
+        private set
+    var draw: Boolean = false
+        private set
+    var gameWon: Boolean = false
+        private set
+    var matrix: Array<Array<Int>> = emptyArray()
+
 
     fun setupMatrix() {
         matrix = Array(Constants.BOARD_SIZE) { Array(Constants.BOARD_SIZE) { Square.EMPTY.value } }
@@ -14,7 +16,7 @@ class IksOks {
         draw = false
     }
 
-    fun play(x: Int, y: Int, matrix: Matrix) {
+    fun play(x: Int, y: Int) {
         matrix[x][y] = xOrY(xPlaying = xPlaying)
         gameWon = isWinningMove(
             matrix = matrix,
@@ -34,7 +36,7 @@ class IksOks {
         }
     }
 
-    fun xOrY(xPlaying: Boolean): Int = if (xPlaying) Square.X.value else Square.O.value
+    private fun xOrY(xPlaying: Boolean): Int = if (xPlaying) Square.X.value else Square.O.value
 
 
     private fun isWinningMove(matrix: Matrix, x: Int, y: Int, move: Int): Boolean {
@@ -53,7 +55,7 @@ class IksOks {
 
     private fun checkReverseDiagonal(
         matrix: Matrix,
-        move: Int
+        move: Int,
     ): Boolean {
         for (i in 0 until Constants.BOARD_SIZE) {
             if (matrix[i][(Constants.BOARD_SIZE - 1) - i] != move) {
@@ -68,7 +70,7 @@ class IksOks {
 
     private fun checkDiagonal(
         matrix: Matrix,
-        move: Int
+        move: Int,
     ): Boolean {
         for (i in 0 until Constants.BOARD_SIZE) {
             if (matrix[i][i] != move) {
@@ -84,7 +86,7 @@ class IksOks {
     private fun checkColumn(
         board: Matrix,
         y: Int,
-        move: Int
+        move: Int,
     ): Boolean {
         for (i in 0 until Constants.BOARD_SIZE) {
             if (board[i][y] != move) {
@@ -100,7 +102,7 @@ class IksOks {
     private fun checkRow(
         matrix: Matrix,
         x: Int,
-        move: Int
+        move: Int,
     ): Boolean {
         for (i in 0 until Constants.BOARD_SIZE) {
             if (matrix[x][i] != move) {

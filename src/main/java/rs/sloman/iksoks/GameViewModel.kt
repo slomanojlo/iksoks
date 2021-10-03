@@ -7,8 +7,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import rs.sloman.iksoks.Constants.Companion.BOARD_SIZE
 import javax.inject.Inject
 
+typealias Matrix = Array<Array<Int>>
+
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class GameViewModel @Inject constructor() : ViewModel() {
 
     private val _xPlaying: MutableLiveData<Boolean> = MutableLiveData(true)
     private val matrix: MutableLiveData<Matrix> = MutableLiveData(emptyArray())
@@ -67,13 +69,15 @@ class MainViewModel @Inject constructor() : ViewModel() {
         _gameWon.value = false
         _xPlaying.value = true
         _message.value = null
-        matrix.value = Array(BOARD_SIZE) { Array(BOARD_SIZE) { Square.EMPTY.value } }
+        matrix.value = initializeMatrix()
         _list.value = mutableListOf<Int>().apply {
             repeat(BOARD_SIZE * BOARD_SIZE) {
                 this.add(Square.EMPTY.value)
             }
         }
     }
+
+    private fun initializeMatrix() = Array(BOARD_SIZE) { Array(BOARD_SIZE) { Square.EMPTY.value } }
 
     private fun isWinningMove(matrix: Matrix, x: Int, y: Int, move: Int): Boolean {
 
