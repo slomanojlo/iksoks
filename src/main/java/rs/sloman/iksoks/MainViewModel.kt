@@ -11,7 +11,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor() : ViewModel() {
 
     private val _xPlaying: MutableLiveData<Boolean> = MutableLiveData(true)
-    private var matrix: MutableLiveData<Array<Array<Int>>> = MutableLiveData(emptyArray())
+    private val matrix: MutableLiveData<Matrix> = MutableLiveData(emptyArray())
 
     private val _list: MutableLiveData<MutableList<Int>> = MutableLiveData(mutableListOf())
     val list = _list.asLiveData()
@@ -21,12 +21,11 @@ class MainViewModel @Inject constructor() : ViewModel() {
     private val _gameWon: MutableLiveData<Boolean> = MutableLiveData(false)
     val gameWon = _gameWon.asLiveData()
 
-
     private val _message: MutableLiveData<String> = MutableLiveData(null)
     val message = _message.asLiveData()
 
     init {
-        setupBoard()
+        setupMatrix()
     }
 
 
@@ -34,11 +33,15 @@ class MainViewModel @Inject constructor() : ViewModel() {
         val x = position / BOARD_SIZE
         val y = position % BOARD_SIZE
 
-        matrix.value?.get(x)
-            ?.set(y, if (_xPlaying.value == true) Square.X.value else Square.O.value)
-        _list.value = matrix.value?.flatten()?.toMutableList()
-        _gameWon.value =
-            isWinningMove(x, y, if (_xPlaying.value == true) Square.X.value else Square.O.value)
+        matrix.value?.let { matrix ->
+            matrix[x][y] = if (_xPlaying.value == true) Square.X.value else Square.O.value
+            _list.value = matrix.flatten().toMutableList()
+            _gameWon.value =
+                isWinningMove(
+                    matrix, x, y, if (_xPlaying.value == true) Square.X.value else Square.O.value
+                )
+
+        }
 
         if (_gameWon.value == true) {
             _message.value = "${
@@ -59,7 +62,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun setupBoard() {
+    fun setupMatrix() {
         _draw.value = false
         _gameWon.value = false
         _xPlaying.value = true
@@ -72,54 +75,79 @@ class MainViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun isWinningMove(x: Int, y: Int, move: Int): Boolean {
+    private fun isWinningMove(matrix: Matrix, x: Int, y: Int, move: Int): Boolean {
 
-        val board = matrix.value
-
-        // check the row
-        for (i in 0 until BOARD_SIZE) {
-            if (board?.get(x)?.get(i) != move) {
-                break
-            }
-            if (i == BOARD_SIZE - 1) {
-                return true
-            }
-        }
-
-        // Check the column
-        for (i in 0 until BOARD_SIZE) {
-            if (board?.get(i)?.get(y) != move) {
-                break
-            }
-            if (i == BOARD_SIZE - 1) {
-                return true
-            }
-        }
-
-        // Check the diagonal
+        if (checkRow(matrix, x, move)) return true
+        if (checkColumn(matrix, y, move)) return true
         if (x == y) {
-            for (i in 0 until BOARD_SIZE) {
-                if (board?.get(i)?.get(i) != move) {
-                    break
-                }
-                if (i == BOARD_SIZE - 1) {
-                    return true
-                }
-            }
+            if (checkDiagonal(matrix, move)) return true
         }
-
-        // Check anti-diagonal
         if (x + y == BOARD_SIZE - 1) {
-            for (i in 0 until BOARD_SIZE) {
-                if (board?.get(i)?.get((BOARD_SIZE - 1) - i) != move) {
-                    break
-                }
-                if (i == BOARD_SIZE - 1) {
-                    return true
-                }
-            }
+            if (checkReverseDiagonal(matrix, move)) return true
         }
 
+        return false
+    }
+
+    private fun checkReverseDiagonal(
+        matrix: Matrix,
+        move: Int
+    ): Boolean {
+        for (i in 0 until BOARD_SIZE) {
+            if (matrix[i][(BOARD_SIZE - 1) - i] != move) {
+                break
+            }
+            if (i == BOARD_SIZE - 1) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun checkDiagonal(
+        matrix: Matrix,
+        move: Int
+    ): Boolean {
+        for (i in 0 until BOARD_SIZE) {
+            if (matrix[i][i] != move) {
+                break
+            }
+            if (i == BOARD_SIZE - 1) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun checkColumn(
+        board: Matrix,
+        y: Int,
+        move: Int
+    ): Boolean {
+        for (i in 0 until BOARD_SIZE) {
+            if (board[i][y] != move) {
+                break
+            }
+            if (i == BOARD_SIZE - 1) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun checkRow(
+        matrix: Matrix,
+        x: Int,
+        move: Int
+    ): Boolean {
+        for (i in 0 until BOARD_SIZE) {
+            if (matrix[x][i] != move) {
+                break
+            }
+            if (i == BOARD_SIZE - 1) {
+                return true
+            }
+        }
         return false
     }
 

@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         Button(
-                            onClick = { viewModel.setupBoard() },
+                            onClick = { viewModel.setupMatrix() },
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(text = "Reset")
