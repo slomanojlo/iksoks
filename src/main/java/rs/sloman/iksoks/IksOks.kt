@@ -1,23 +1,27 @@
 package rs.sloman.iksoks
 
-class IksOks {
-    var xPlaying: Boolean = true
-        private set
-    var draw: Boolean = false
-        private set
-    var gameWon: Boolean = false
-        private set
-    var matrix: Array<Array<Int>> = emptyArray()
-        private set
+import rs.sloman.iksoks.Constants.Companion.BOARD_SIZE
+
+data class IksOks(
+    var xPlaying: Boolean = true,
+    var draw: Boolean = false,
+    var gameWon: Boolean = false,
+    var matrix: MutableList<MutableList<Int>> = mutableListOf(),
+) {
 
     fun setupMatrix() {
-        matrix = Array(Constants.BOARD_SIZE) { Array(Constants.BOARD_SIZE) { Square.EMPTY.value } }
+        matrix = generateMatrix()
         xPlaying = true
         draw = false
+        gameWon = false
     }
 
+    private fun generateMatrix() = generateSequence {
+        generateSequence { 0 }.take(BOARD_SIZE).toMutableList()
+    }.take(BOARD_SIZE).toMutableList()
+
     fun play(x: Int, y: Int) {
-        matrix[x][y] = xOrY(xPlaying = xPlaying)
+        matrix[x][y] = (xOrY(xPlaying = xPlaying))
         gameWon = isWinningMove(
             matrix = matrix,
             x = x,
@@ -27,14 +31,16 @@ class IksOks {
 
         if (gameWon) return
 
-        if (matrix.flatten().none { it == Square.EMPTY.value }) {
-            draw = true
-        }
+        draw = isDraw()
 
-        if (!gameWon && !draw) {
+        if (isGameActive()) {
             xPlaying = !xPlaying
         }
     }
+
+    private fun isGameActive() = !gameWon && !draw
+
+    private fun isDraw() = matrix.flatten().none { it == Square.EMPTY.value }
 
     private fun xOrY(xPlaying: Boolean): Int = if (xPlaying) Square.X.value else Square.O.value
 
@@ -45,7 +51,7 @@ class IksOks {
         if (x == y) {
             if (checkDiagonal(matrix, move)) return true
         }
-        if (x + y == Constants.BOARD_SIZE - 1) {
+        if (x + y == BOARD_SIZE - 1) {
             if (checkReverseDiagonal(matrix, move)) return true
         }
 
@@ -56,11 +62,11 @@ class IksOks {
         matrix: Matrix,
         move: Int,
     ): Boolean {
-        for (i in 0 until Constants.BOARD_SIZE) {
-            if (matrix[i][(Constants.BOARD_SIZE - 1) - i] != move) {
+        for (i in 0 until BOARD_SIZE) {
+            if (matrix[i][(BOARD_SIZE - 1) - i] != move) {
                 break
             }
-            if (i == Constants.BOARD_SIZE - 1) {
+            if (i == BOARD_SIZE - 1) {
                 return true
             }
         }
@@ -71,11 +77,11 @@ class IksOks {
         matrix: Matrix,
         move: Int,
     ): Boolean {
-        for (i in 0 until Constants.BOARD_SIZE) {
+        for (i in 0 until BOARD_SIZE) {
             if (matrix[i][i] != move) {
                 break
             }
-            if (i == Constants.BOARD_SIZE - 1) {
+            if (i == BOARD_SIZE - 1) {
                 return true
             }
         }
@@ -87,11 +93,11 @@ class IksOks {
         y: Int,
         move: Int,
     ): Boolean {
-        for (i in 0 until Constants.BOARD_SIZE) {
+        for (i in 0 until BOARD_SIZE) {
             if (board[i][y] != move) {
                 break
             }
-            if (i == Constants.BOARD_SIZE - 1) {
+            if (i == BOARD_SIZE - 1) {
                 return true
             }
         }
@@ -103,11 +109,11 @@ class IksOks {
         x: Int,
         move: Int,
     ): Boolean {
-        for (i in 0 until Constants.BOARD_SIZE) {
+        for (i in 0 until BOARD_SIZE) {
             if (matrix[x][i] != move) {
                 break
             }
-            if (i == Constants.BOARD_SIZE - 1) {
+            if (i == BOARD_SIZE - 1) {
                 return true
             }
         }

@@ -16,7 +16,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,16 +42,17 @@ class MainActivity : ComponentActivity() {
             IksOksTheme {
                 Surface {
 
-                    val iksOks = viewModel.iksOks.observeAsState()
+                    val iksOks = remember { viewModel._iksOks }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                         LazyVerticalGridDemo(
-                            list = iksOks.value?.matrix?.flatten()?.toMutableList() ?: arrayListOf(),
-                            gameWon = iksOks.value?.gameWon == true
+                            list = iksOks.value.matrix.flatten(),
+                            gameWon = iksOks.value.gameWon
                         ) {
                             viewModel.play(it)
                         }
+
 
                         Button(
                             onClick = { viewModel.setupMatrix() },
@@ -58,24 +61,31 @@ class MainActivity : ComponentActivity() {
                             Text(text = "Reset")
                         }
 
-                        iksOks.value?.let {
-                            Text(
-                                text = if (it.gameWon) "WON" else "PLAYING",
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
+                        Text(
+                            text = setupMessage(iksOks),
+                            modifier = Modifier.padding(16.dp)
+                        )
                     }
                 }
             }
         }
     }
+
+    @Composable
+    private fun setupMessage(iksOks: MutableState<IksOks>) =
+        when {
+            iksOks.value.gameWon -> (if (iksOks.value.xPlaying) Square.X.name else Square.O.name) + " WON!"
+            iksOks.value.draw -> "DRAW!"
+            else -> "Please choose a square."
+        }
+
 }
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LazyVerticalGridDemo(
-    list: MutableList<Int>,
+    list: List<Int>,
     gameWon: Boolean,
     onClick: (Int) -> Unit,
 ) {

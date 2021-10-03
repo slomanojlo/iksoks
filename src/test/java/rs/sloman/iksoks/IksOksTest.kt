@@ -24,7 +24,9 @@ class IksOksTest {
 
     @Test
     fun shouldInitializeMatrixOnSetup(){
-        val expectedArray = Array(BOARD_SIZE) { Array(BOARD_SIZE) { Square.EMPTY.value } }
+        val expectedArray = generateSequence {
+            generateSequence { 0 }.take(BOARD_SIZE).toMutableList()
+        }.take(BOARD_SIZE).toMutableList()
 
         assertThat(expectedArray).isEqualTo(iksOks.matrix)
     }
